@@ -29,16 +29,15 @@ def dimension_reduction(x_train, x_test, n_components=50, verbose=True, upper_bo
     return pd.DataFrame(pca.transform(x_train)), pd.DataFrame(pca.transform(x_test))
 
 #convert string value to integer(ignore missing data)
-def encode_labels(x_train, x_test, index=None):
-    label_encoder = sklearn.preprocessing.LabelEncoder()
+def encode_labels(x_train, x_test, encoder):
     df = pd.concat([x_train,x_test],axis=0) 
     #encoding y labels
-    if index == -1:
+    if len(x_train.shape)==1:
         print('Encoding y label values...')
         not_null_df = df[df.notnull()]
-        label_encoder.fit(not_null_df)
-        x_train = label_encoder.transform(x_train)
-        x_test = label_encoder.transform(x_test)
+        encoder.fit(not_null_df)
+        x_train = encoder.transform(x_train)
+        x_test = encoder.transform(x_test)
     #encoding x features
     else:
         print('Encoding X features...')
@@ -46,15 +45,15 @@ def encode_labels(x_train, x_test, index=None):
             if t == 'object':
                 s_df = df.iloc[:,i]
                 not_null_df = s_df.loc[s_df.notnull()]
-                label_encoder.fit(not_null_df)
+                encoder.fit(not_null_df)
                 try:
                     x_train.iloc[:,i] = x_train.iloc[:,i].astype('float')
                 except:
-                    x_train.iloc[:,i] = x_train.iloc[:,i].apply(lambda x: label_encoder.transform([x])[0] if x not in [np.nan] else x)
+                    x_train.iloc[:,i] = x_train.iloc[:,i].apply(lambda x: encoder.transform([x])[0] if x not in [np.nan] else x)
                 try:
                     x_test.iloc[:,i] = x_test.iloc[:,i].astype('float')
                 except:
-                    x_test.iloc[:,i] = x_test.iloc[:,i].apply(lambda x: label_encoder.transform([x])[0] if x not in [np.nan] else x) #np.nan
+                    x_test.iloc[:,i] = x_test.iloc[:,i].apply(lambda x: encoder.transform([x])[0] if x not in [np.nan] else x) #np.nan
     return x_train, x_test
 
 #put class colunmn at end of dataframe
@@ -93,7 +92,7 @@ def impute_value(x_train, x_test, strategy):
     
 # standardize data with given scaler, default: StandardScaler
 def standardize_data(x_train, x_test, scaler):
-    print('Standardized data with %s'%str(scaler).split('.')[-1].split("'>")[0])
+    print('Standardized data with %s'%str(type(scaler)).split('.')[-1].split("'>")[0])
     columns = x_train.columns
     scaler = scaler.fit(x_train)
     x_train = scaler.transform(x_train)

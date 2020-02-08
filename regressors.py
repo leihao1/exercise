@@ -1,3 +1,4 @@
+import time
 import scipy
 from scipy.io import arff
 from scipy import stats
@@ -112,33 +113,56 @@ def train_NeuralNetwork(X_train, y_train):
 def run_all_regrs(X_train, y_train, X_test, y_test):
     all_regrs = []
     regr_names = []
-
+    regr_times = []
+    
+    start = time.time()
     regr1 = train_SVR(X_train, y_train)
     all_regrs.append(regr1.best_estimator_)
     regr_names.append('SVR')
-
+    end = time.time()
+    regr_times.append(end - start)
+    start = end
+    
     regr2 = train_DecisionTree(X_train, y_train)
     all_regrs.append(regr2.best_estimator_)
     regr_names.append('Decision Tree')
-
+    end = time.time()
+    regr_times.append(end - start)
+    start = end
+    
     regr3 = train_RandomForest(X_train, y_train)
     all_regrs.append(regr3.best_estimator_)
     regr_names.append('Random Forest')
-
+    end = time.time()
+    regr_times.append(end - start)
+    start = end
+    
     regr4 = train_AdaBoost(X_train, y_train)
     all_regrs.append(regr4.best_estimator_)
     regr_names.append('AdaBoost')
-
+    end = time.time()
+    regr_times.append(end - start)
+    start = end
+    
     regr5 = train_GaussianProcess(X_train, y_train)
     all_regrs.append(regr5.best_estimator_)
     regr_names.append('Gaussian Process')
-
+    end = time.time()
+    regr_times.append(end - start)
+    start = end
+    
     regr6 = train_LinearRegression(X_train, y_train)
     all_regrs.append(regr6.best_estimator_)
     regr_names.append('Linear Regression')
-
+    end = time.time()
+    regr_times.append(end - start)
+    start = end
+    
     regr7 = train_NeuralNetwork(X_train, y_train)
     all_regrs.append(regr7.best_estimator_)
     regr_names.append('NeuralNetwork')
-
-    return all_regrs, regr_names
+    end = time.time()
+    regr_times.append(end - start)
+    start = end
+    
+    return all_regrs, regr_names, regr_times
