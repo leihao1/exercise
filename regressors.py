@@ -1,6 +1,5 @@
 import time
 import scipy
-from scipy.io import arff
 from scipy import stats
 from scipy.stats import norm
 

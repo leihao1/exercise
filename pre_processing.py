@@ -20,17 +20,50 @@ def check_class_distribution(df):
     print(df.iloc[:,-1].value_counts())
     
 #PCA dimension reducetion
-def dimension_reduction(x_train, x_test, n_components=50, verbose=True, upper_bound=0, ):
+def dimension_reduction(x_train, x_test, n_components, verbose=True, upper_bound=0):
+    embedding = None
     if x_train.shape[1] >= upper_bound:
         if verbose:
             print('Reduce dimension form %s to %s'%(x_train.shape[1],n_components))
         pca = PCA(n_components=n_components, random_state=33)
         pca.fit(x_train)
-    return pd.DataFrame(pca.transform(x_train)), pd.DataFrame(pca.transform(x_test))
+        x_train = pd.DataFrame(pca.transform(x_train))
+        x_test = pd.DataFrame(pca.transform(x_test))
+        embedding = pca
+    return x_train, x_test
 
 #convert string value to integer(ignore missing data)
+# def encode_labels(x_train, x_test, encoder):
+#     df = pd.concat([x_train,x_test],axis=0) 
+#     #encoding y labels
+#     if len(x_train.shape)==1:
+#         print('Encoding y label values...')
+#         not_null_df = df[df.notnull()]
+#         encoder.fit(not_null_df)
+#         x_train = encoder.transform(x_train)
+#         x_test = encoder.transform(x_test)
+#     #encoding x features
+#     else:
+#         print('Encoding X features...')
+#         for i,t in enumerate(df.dtypes):
+#             if t == 'object':
+#                 s_df = df.iloc[:,i]
+#                 not_null_df = s_df.loc[s_df.notnull()]
+#                 encoder.fit(not_null_df)
+#                 try:
+#                     x_train.iloc[:,i] = x_train.iloc[:,i].astype('float')
+#                 except:
+#                     x_train.iloc[:,i] = x_train.iloc[:,i].apply(lambda x: encoder.transform([x])[0] if x not in [np.nan] else x)
+#                 try:
+#                     x_test.iloc[:,i] = x_test.iloc[:,i].astype('float')
+#                 except:
+#                     x_test.iloc[:,i] = x_test.iloc[:,i].apply(lambda x: encoder.transform([x])[0] if x not in [np.nan] else x) #np.nan
+#     return x_train, x_test
+
 def encode_labels(x_train, x_test, encoder):
-    df = pd.concat([x_train,x_test],axis=0) 
+    df = pd.concat([x_train,x_test],axis=0)
+    x_train = x_train.reset_index(drop=True)
+    x_test = x_test.reset_index(drop=True)
     #encoding y labels
     if len(x_train.shape)==1:
         print('Encoding y label values...')
@@ -43,23 +76,28 @@ def encode_labels(x_train, x_test, encoder):
         print('Encoding X features...')
         for i,t in enumerate(df.dtypes):
             if t == 'object':
-                s_df = df.iloc[:,i]
-                not_null_df = s_df.loc[s_df.notnull()]
+                series = df.iloc[:,i]
+                not_null_df = series.loc[series.notnull()]
                 encoder.fit(not_null_df)
                 try:
                     x_train.iloc[:,i] = x_train.iloc[:,i].astype('float')
                 except:
-                    x_train.iloc[:,i] = x_train.iloc[:,i].apply(lambda x: encoder.transform([x])[0] if x not in [np.nan] else x)
+                    not_nan_indexs = x_train[x_train.iloc[:,i].notna()].index
+#                     not_nan_indexs = [not_nan_indexs.tolist().index(i) for i in not_nan_indexs.tolist()]
+                    x_train.iloc[not_nan_indexs,i] = encoder.transform(x_train.iloc[not_nan_indexs,i])
                 try:
                     x_test.iloc[:,i] = x_test.iloc[:,i].astype('float')
                 except:
-                    x_test.iloc[:,i] = x_test.iloc[:,i].apply(lambda x: encoder.transform([x])[0] if x not in [np.nan] else x) #np.nan
+                    not_nan_indexs = x_test[x_test.iloc[:,i].notna()].index
+#                     not_nan_indexs = [not_nan_indexs.tolist().index(i) for i in not_nan_indexs.tolist()]
+                    x_test.iloc[not_nan_indexs,i] = encoder.transform(x_test.iloc[not_nan_indexs,i])
     return x_train, x_test
 
 #put class colunmn at end of dataframe
-def reorder_columns(dataFrame):
+def reorder_columns(dataFrame, target_column):
+    target_column += 1
     cols = dataFrame.columns.tolist()
-    cols = cols[1:] + cols[:1]
+    cols = cols[target_column:] + cols[:target_column]
     return dataFrame[cols]
 
 #impute missing data with given strategy
