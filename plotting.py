@@ -211,7 +211,8 @@ def plot_confusion_matrix(estimator, X_test, y_test, classes, cmap=plt.cm.Blues,
     
     np.set_printoptions(precision=2)
     recall = cm[1,1]/(cm[1,0]+cm[1,1])
-        
+    acc = (cm[0,0]+cm[1,1])/(cm.sum())
+    
     tick_marks = np.arange(len(classes))
     plt.xticks(tick_marks, classes, rotation=0)
     plt.yticks(tick_marks, classes, rotation=90)
@@ -223,7 +224,7 @@ def plot_confusion_matrix(estimator, X_test, y_test, classes, cmap=plt.cm.Blues,
     for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
         plt.text(j, i, cm[i, j], horizontalalignment="center", color="white" if cm[i, j] > thresh else "black")
     
-    plt.title(title+' (Recall: %.2f%%)'%(recall*100))
+    plt.title(title+' (Recall: %.2f%%  Acc: %.2f%%)'%(recall*100,acc*100))
     plt.tight_layout()
     plt.ylabel('True label')
     plt.xlabel('Predicted label')

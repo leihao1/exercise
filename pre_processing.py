@@ -75,6 +75,7 @@ def encode_labels(x_train, x_test, encoder):
     else:
         print('Encoding X features...')
         for i,t in enumerate(df.dtypes):
+#             print(df.shape)
             if t == 'object':
                 series = df.iloc[:,i]
                 not_null_df = series.loc[series.notnull()]
